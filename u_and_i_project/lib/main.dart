@@ -3,6 +3,11 @@ import 'package:u_and_i_project/screen/home_screen.dart';
 
 void main() {
   runApp(MaterialApp(
+    theme: ThemeData(
+      textTheme: TextTheme(
+
+      ),
+    ),
     debugShowCheckedModeBanner: false,
     home: HomeScreen()
   ));

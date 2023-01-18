@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -8,6 +9,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  DateTime selectedDate =
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
           width: MediaQuery.of(context).size.width,
           child: Column(
             children: [
-              _TopPart(),
+              _TopPart(
+                selectedDate: selectedDate,
+                onPressed: onHeartPressed,
+              ),
               _BottomPart()
             ],
           ),
@@ -26,34 +33,71 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
+
+  void onHeartPressed() {
+    DateTime now = DateTime.now();
+
+      // dialog
+      showCupertinoDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext context) {
+            return Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                color: Colors.white,
+                height: 300.0,
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.date,
+                  initialDateTime: selectedDate,
+                  maximumDate: now,
+                  onDateTimeChanged: (DateTime date) {
+                    setState(() {
+                      selectedDate = date;
+                    });
+                  },
+                ),
+              ),
+            );
+          });
+      }
+  }
+
 
 class _TopPart extends StatelessWidget {
-  const _TopPart({Key? key}) : super(key: key);
+  final DateTime selectedDate;
+  final VoidCallback onPressed;
+
+  _TopPart({
+    required this.selectedDate,
+    required this.onPressed,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Text('U&I',
+          Text(
+            'U&I',
             style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'parisienne',
-                fontSize: 80.0
-            ),
+                color: Colors.white, fontFamily: 'parisienne', fontSize: 80.0),
           ),
           Column(
             children: [
-              Text('우리 처음 만날 날',
+              Text(
+                '우리 처음 만날 날',
                 style: TextStyle(
                     color: Colors.white,
                     fontFamily: 'sunflower',
-                    fontSize: 30.0
-                ),
+                    fontSize: 30.0),
               ),
-              Text('2021.12.27',
+              Text(
+                '${selectedDate.year}.${selectedDate.month}.${selectedDate.day}',
                 style: TextStyle(
                   color: Colors.white,
                   fontFamily: 'sunflower',
@@ -64,18 +108,25 @@ class _TopPart extends StatelessWidget {
           ),
           IconButton(
             iconSize: 60.0,
-            onPressed: (){}, icon: Icon(
-            Icons.favorite,
-            color: Colors.red,
+            onPressed: onPressed,
+            icon: Icon(
+              Icons.favorite,
+              color: Colors.red,
+            ),
           ),
-          ),
-          Text('D+1',
+          Text(
+            'D + ${
+            // 오늘의 날짜와 선택된 날짜를 알아야 한다.
+            DateTime(
+                  now.year,
+                  now.month,
+                  now.day,
+                ).difference(selectedDate).inDays + 1}',
             style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'sunflower',
                 fontSize: 50.0,
-                fontWeight: FontWeight.w700
-            ),
+                fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -88,8 +139,8 @@ class _BottomPart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(child:
-    Image.asset('asset/img/middle_image.png'),
+    return Expanded(
+      child: Image.asset('asset/img/middle_image.png'),
     );
   }
 }
