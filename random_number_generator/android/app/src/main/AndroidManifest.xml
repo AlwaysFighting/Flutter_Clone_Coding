@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.const_constructor">
+    package="com.example.random_number_generator">
    <application
-        android:label="const_constructor"
+        android:label="random_number_generator"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
