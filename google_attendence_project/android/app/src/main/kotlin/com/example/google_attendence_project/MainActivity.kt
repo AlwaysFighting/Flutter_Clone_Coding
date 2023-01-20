@@ -1,4 +1,4 @@
-package com.example.google_attendance_check_project
+package com.example.google_attendence_project
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,4 +1,4 @@
-# google_attendance_check_project
+# google_attendence_project
 
 A new Flutter project.
 

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.google_attendance_check_project">
+    package="com.example.google_attendence_project">
    <application
-        android:label="google_attendance_check_project"
+        android:label="google_attendence_project"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
