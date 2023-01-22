@@ -47,5 +47,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>마이크를 허용하시겠습니까?</string>
+	<key>NSCameraUsageDescription</key>
+	<string>카메라를 허용하시겠습니까?</string>
 </dict>
 </plist>
