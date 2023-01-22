@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.agora_api_video_call_project">
+    package="com.example.agora_api_project">
    <application
-        android:label="agora_api_video_call_project"
+        android:label="agora_api_project"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
