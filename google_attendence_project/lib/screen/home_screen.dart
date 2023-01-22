@@ -11,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool choolCheckDone = false;
+  GoogleMapController? mapController; // 구글맵이 생성되고나서 생성돼야 하니까 ? 붙인다.
 
   // latitude - 위도 , longtitude - 경도
   static final LatLng companyLatLng = LatLng(37.5233273, 126.921252);
@@ -59,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: randerAppbar(),
+        appBar: renderAppbar(),
         body: FutureBuilder<String>(
           future: checkPermission(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -100,6 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ? withinDistanceCircle
                                   : notWithinDistanceCircle,
                           marker: marker,
+                          onMapCreated: onMapCreated,
                         ),
                         _ChoolCheckButton(
                           isWithInRange: isWithInRange,
@@ -117,6 +119,9 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ));
   }
+
+  // 구글맵이 생성됐을 때 controller 를 받아서 생성하겠다.
+  onMapCreated(GoogleMapController controller) {}
 
   // 출근 버튼을 눌렸을 경우
   onChoolCheckPressed() async {
@@ -176,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return '위치 권한을 허가 되었습니다.';
   }
 
-  AppBar randerAppbar() {
+  AppBar renderAppbar() {
     return AppBar(
       title: Text(
         "Google Map Project",
@@ -186,6 +191,23 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       backgroundColor: Colors.white,
+      actions: [
+        // 현재 내 위치로 카메라 전환하는 버튼
+        IconButton(
+            onPressed: () async {
+              if (mapController == null) {
+                return;
+              }
+
+              final location = await Geolocator.getCurrentPosition();
+
+              mapController!.animateCamera(CameraUpdate.newLatLng(
+                  LatLng(location.latitude, location.longitude)));
+            },
+            color: Colors.blue,
+            icon: Icon(Icons.my_location)
+        )
+      ],
     );
   }
 }
@@ -194,12 +216,14 @@ class _CustomGoogleMap extends StatelessWidget {
   final CameraPosition initialPosition;
   final Marker marker;
   final Circle circle;
+  final MapCreatedCallback? onMapCreated;
 
   const _CustomGoogleMap(
       {Key? key,
       required this.initialPosition,
       required this.circle,
-      required this.marker})
+      required this.marker,
+      this.onMapCreated})
       : super(key: key);
 
   @override
@@ -214,6 +238,7 @@ class _CustomGoogleMap extends StatelessWidget {
         myLocationEnabled: true,
         circles: Set.from([circle]),
         markers: Set.from([marker]),
+        onMapCreated: onMapCreated,
       ),
     );
   }
