@@ -2,7 +2,10 @@ import 'package:calendar_schedular_project/component/calendar.dart';
 import 'package:calendar_schedular_project/component/schedule_card.dart';
 import 'package:calendar_schedular_project/component/today_banner.dart';
 import 'package:calendar_schedular_project/const/colors.dart';
+import 'package:calendar_schedular_project/database/drift_database.dart';
+import 'package:calendar_schedular_project/model/schedule_with_color.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
 import '../component/schedule_bottom_sheet.dart';
 
@@ -14,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  DateTime selectedDay = DateTime(
+  DateTime selectedDate = DateTime.utc(
     DateTime.now().year,
     DateTime.now().month,
     DateTime.now().day,
@@ -30,14 +33,16 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Calendar(
-              selectedDay: selectedDay,
+              selectedDay: selectedDate,
               focusedDay: focusedDay,
               onDaySelected: onDaySelected,
             ),
             SizedBox(height: 8.0),
-            TodayBanner(selectedDay: selectedDay, scheduleCount: 3),
+            TodayBanner(selectedDay: selectedDate),
             SizedBox(height: 8.0),
-            _SchedultList(),
+            _ScheduledList(
+              selectedDate: selectedDate,
+            ),
           ],
         ),
       ),
@@ -47,11 +52,14 @@ class _HomeScreenState extends State<HomeScreen> {
   FloatingActionButton renderFloatingActionButton() {
     return FloatingActionButton(
       onPressed: () {
-        showModalBottomSheet(context: context,
+        showModalBottomSheet(
+            context: context,
             isScrollControlled: true,
             builder: (_) {
-          return ScheduleBottomSheet(selectedDate: selectedDay,);
-        });
+              return ScheduleBottomSheet(
+                selectedDate: selectedDate,
+              );
+            });
       },
       backgroundColor: PRIMARY_COLOR,
       child: Icon(Icons.add),
@@ -60,33 +68,75 @@ class _HomeScreenState extends State<HomeScreen> {
 
   onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
-      this.selectedDay = selectedDay;
+      this.selectedDate = selectedDay;
       this.focusedDay = selectedDay;
     });
   }
 }
 
-class _SchedultList extends StatelessWidget {
-  const _SchedultList({Key? key}) : super(key: key);
+class _ScheduledList extends StatelessWidget {
+  final DateTime selectedDate;
+
+  const _ScheduledList({Key? key, required this.selectedDate})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: ListView.separated(
-          itemCount: 8,
-          separatorBuilder: (BuildContext context, int index) {
-            return SizedBox(height: 8.0);
-          },
-          itemBuilder: (context, index) {
-            return ScheduleCard(
-                startTime: 8,
-                endTime: 9,
-                content: '프로그래밍 공부하기 $index',
-                color: Colors.red);
-          },
-        ),
+        child: StreamBuilder<List<ScheduleWithColor>>(
+            stream: GetIt.I<LocalDatabase>().watchSchedules(selectedDate),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.hasData && snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text("스케줄이 없습니다.."),
+                );
+              }
+
+              return ListView.separated(
+                itemCount: snapshot.data!.length,
+                separatorBuilder: (BuildContext context, int index) {
+                  return SizedBox(height: 8.0);
+                },
+                itemBuilder: (context, index) {
+                  final scheduleWithColor = snapshot.data![index];
+
+                  return Dismissible(
+                    key: ObjectKey(scheduleWithColor.schedule.id),
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (DismissDirection direction) {
+                      GetIt.I<LocalDatabase>()
+                          .removeSchedule(scheduleWithColor.schedule.id);
+                    },
+                    child: GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (_) {
+                              return ScheduleBottomSheet(
+                                selectedDate: selectedDate,
+                                scheduleId: scheduleWithColor.schedule.id,
+                              );
+                            });
+                      },
+                      child: ScheduleCard(
+                          startTime: scheduleWithColor.schedule.startTime,
+                          endTime: scheduleWithColor.schedule.endTime,
+                          content: scheduleWithColor.schedule.content,
+                          color: Color(int.parse(
+                              'FF${scheduleWithColor.categoryColor.hexCode}',
+                              radix: 16))),
+                    ),
+                  );
+                },
+              );
+            }),
       ),
     );
   }
