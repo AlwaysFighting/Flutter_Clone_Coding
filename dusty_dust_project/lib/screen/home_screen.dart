@@ -4,9 +4,10 @@ import 'package:dusty_dust_project/component/main_app_bar.dart';
 import 'package:dusty_dust_project/component/main_drawer.dart';
 import 'package:dusty_dust_project/const/colors.dart';
 import 'package:dusty_dust_project/repository/stat_repository.dart';
+import 'package:dusty_dust_project/utils/data_utils.dart';
 import 'package:flutter/material.dart';
 import '../component/hourly_card.dart';
-import '../const/status_level.dart';
+import '../const/regions.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String region = regions[0];
 
   Future<List<StatModel>> fetchData() async {
     final statModels = await StatRepository.fetchData();
@@ -26,7 +28,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: PRIMARY_COLOR,
-      drawer: MainDrawer(),
+      drawer: MainDrawer(
+        onRegionTap: (String region) {
+          setState(() {
+            this.region = region;
+          });
+          Navigator.of(context).pop();
+        },
+        selectedRegion: region,
+      ),
       body: FutureBuilder<List<StatModel>>(
           future: fetchData(),
           builder: (context, snapshot) {
@@ -47,14 +57,15 @@ class _HomeScreenState extends State<HomeScreen> {
             List<StatModel> stats = snapshot.data!;
             StatModel recentStat = stats[0];
 
-            final status = StatusLevel.where((element) =>
-            element.minFineDust < recentStat.seoul).last;
+            final status = DataUtils.getStatusFromItemCodeAndValue(
+                value: recentStat.seoul, itemCode: ItemCode.PM10);
 
             return CustomScrollView(
               slivers: [
                 MainAppBar(
                   stat: recentStat,
                   status: status,
+                  region: region,
                 ),
                 SliverToBoxAdapter(
                   child: Column(
