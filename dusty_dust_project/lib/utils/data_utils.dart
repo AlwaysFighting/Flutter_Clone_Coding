@@ -1,4 +1,4 @@
-import 'package:dusty_dust_project/Model/step_model.dart';
+import 'package:dusty_dust_project/Model/stat_model.dart';
 import 'package:dusty_dust_project/const/status_level.dart';
 
 import '../Model/status_model.dart';
@@ -25,7 +25,7 @@ class DataUtils {
     }
   }
 
-  static String itemCodeKrString({
+  static String getItemCodeKrString({
     required ItemCode itemCode,
   }) {
     switch (itemCode) {
